@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package boardgames_backend.api;
+
+import "google/protobuf/timestamp.proto";
+
+enum QueryOperator {
+    QUERY_OPERATOR_IN_RANGE = 0;
+    QUERY_OPERATOR_LATEST = 1;
+}
+
+message QueryParam {
+    oneof parameter {
+        int64 version = 1;
+        google.protobuf.Timestamp timestamp = 2;
+    }
+}

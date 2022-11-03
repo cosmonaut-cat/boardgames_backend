@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+
+  redis:
+    image: redis:7-bullseye
+    container_name: redis_streams
+    depends_on:
+      - db
+
+  redis-commander:
+    container_name: redis_commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    ports:
+    - "8082:8081"
+    depends_on:
+      - redis
+
+  backend_api:
+    image: cosmonaut-cat/backend:latest
+    container_name: backend_api
+    depends_on:
+      - db
+      - mongo
+      - redis
+
+    command: 
+    - boardgames_api
+  
+  grpcui:
+    container_name: grpc_ui
+    image: fullstorydev/grpcui
+    depends_on:
+      - backend_api
+    ports:
+      - 13030:8080
+    command: 
+      - -plaintext
+      - -use-reflection
+      - backend_api:3030
+
+  db:
+    container_name: maria_db
+    image: mariadb
+    command: 
+     --binlog_format=row
+     --server_id=230799
+     --log_bin=mysql-bin
+     --binlog_row_image=full
+     --expire_logs_days=10
+    restart: always
+    volumes:
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/dump.sql
+    environment:
+      MARIADB_ROOT_PASSWORD: 123root
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - 8080:8080
+
+  mongo:
+    container_name: mongo
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123root
+
+  mongo-express:
+    container_name: mongo_express
+    image: mongo-express
+    depends_on:
+      - mongo
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 123root
+      ME_CONFIG_MONGODB_URL: mongodb://root:123root@mongo:27017/
+
+  debezium-server:
+    container_name: debezium_server
+    image: debezium/server
+    volumes:
+      - ./configs/debezium/conf:/debezium/conf
+    ports:
+      - 8083:8083
+    depends_on:
+      - mongo
+      - redis
+      - db

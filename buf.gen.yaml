@@ -1,0 +1,14 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/cosmonaut-cat/boardgames_backend/pkg
+plugins:
+  - name: go
+    out: pkg
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: pkg
+    opt:
+      - paths=source_relative
