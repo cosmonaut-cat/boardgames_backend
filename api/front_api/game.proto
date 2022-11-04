@@ -12,6 +12,7 @@ message Game {
     string datasheet = 5;
     string image_cover = 6;
     int32 players = 7;
+    int64 version= 8;
 
     message AddOrUpdateGameRequest {
         Game game = 1;

@@ -50,6 +50,7 @@ services:
       - event_db
       - read_db
       - redis
+      - backend_event_handler
     env_file:
       - .env
     command: 

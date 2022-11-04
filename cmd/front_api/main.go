@@ -19,6 +19,8 @@ var (
 func main() {
 	startListener()
 
+	dialEventGrpcServer()
+
 	application := newApplication()
 
 	gameService := services.NewGameServiceServer(application)
@@ -26,6 +28,8 @@ func main() {
 	front_api.RegisterGameServicesServer(grpcServer, gameService)
 
 	serveGrpcServer()
+
+	defer grpcClientConn.Close()
 
 	defer func() {
 		if err := dbClient.Disconnect(context.TODO()); err != nil {
@@ -42,7 +46,7 @@ func newApplication() *app.Application {
 		log.Fatalf("Failed to connect database because %s\n", err)
 	}
 
-	gameRepository := db.NewMongoGameRepository(dbClient)
+	gameRepository := db.NewMongoGameRepository(dbClient, eventHandlerClient)
 
 	return &app.Application{
 		Commands: app.Commands{
