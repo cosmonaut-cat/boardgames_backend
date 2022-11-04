@@ -16,10 +16,10 @@ var (
 func startListener() {
 	opts := []grpc.ServerOption{}
 
-	listener, err := net.Listen("tcp", "0.0.0.0:3030")
+	listener, err := net.Listen("tcp", "0.0.0.0:3031")
 
 	if err != nil {
-		log.Fatalf("Failed to listen address %s because %s\n", "0.0.0.0:3030", err)
+		log.Fatalf("Failed to listen address %s because %s\n", "0.0.0.0:3031", err)
 	}
 
 	grpcServerListener = listener
@@ -30,7 +30,7 @@ func startListener() {
 func serveGrpcServer() {
 	reflection.Register(grpcServer)
 
-	log.Printf("Event handler server listening at: %s\n", grpcServerListener.Addr())
+	log.Printf("Front API server listening at: %s\n", grpcServerListener.Addr())
 
 	if err := grpcServer.Serve(grpcServerListener); err != nil {
 		log.Fatalf("Failed to serve becase %s\n", err)

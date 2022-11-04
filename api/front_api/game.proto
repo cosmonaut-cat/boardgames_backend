@@ -1,0 +1,29 @@
+syntax="proto3";
+
+package boardgames_backend.api.front_api;
+
+import "google/protobuf/empty.proto";
+
+message Game {
+    string id = 1;
+    string name = 2;
+    string complement = 3;
+    string description = 4;
+    string datasheet = 5;
+    string image_cover = 6;
+    int32 players = 7;
+
+    message AddOrUpdateGameRequest {
+        Game game = 1;
+    }
+
+    message GetGameRequest {
+        string game_id = 1;
+    }
+}
+
+service GameServices {
+    rpc AddGame(Game.AddOrUpdateGameRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateGame(Game.AddOrUpdateGameRequest) returns (google.protobuf.Empty) {}
+    rpc GetGame(Game.GetGameRequest) returns (Game) {}
+}

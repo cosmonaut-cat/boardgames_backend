@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/app"
@@ -17,11 +16,9 @@ var (
 )
 
 func main() {
-	ctx := context.Background()
-
 	startListener()
 
-	application := newApplication(ctx)
+	application := newApplication()
 
 	eventService := services.NewEventServiceServer(application)
 
@@ -32,7 +29,7 @@ func main() {
 	defer dbClient.Close()
 }
 
-func newApplication(ctx context.Context) *app.Application {
+func newApplication() *app.Application {
 	dbClient, err := db.NewMariaDBConnection()
 
 	if err != nil {

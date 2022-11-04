@@ -26,12 +26,13 @@ services:
       - event_db
       - read_db
       - redis
-
+    env_file:
+      - .env
     command: 
     - event_handler
   
-  grpc_ui:
-    container_name: grpc_ui
+  grpc_ui_event_handler:
+    container_name: grpc_ui_event_handler
     image: fullstorydev/grpcui
     depends_on:
       - backend_event_handler
@@ -41,6 +42,30 @@ services:
       - -plaintext
       - -use-reflection
       - backend_event_handler:3030
+
+  backend_front_api:
+    image: cosmonaut-cat/backend_front_api:latest
+    container_name: backend_front_api
+    depends_on:
+      - event_db
+      - read_db
+      - redis
+    env_file:
+      - .env
+    command: 
+    - front_api
+
+  grpc_ui_front_api:
+    container_name: grpc_ui_front_api
+    image: fullstorydev/grpcui
+    depends_on:
+      - backend_front_api
+    ports:
+      - 13031:8080
+    command: 
+      - -plaintext
+      - -use-reflection
+      - backend_front_api:3031
 
   event_db:
     container_name: event_db
@@ -53,7 +78,7 @@ services:
      --expire_logs_days=10
     restart: always
     volumes:
-      - ./sql/schema.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./configs/event_db/sql/schema.sql:/docker-entrypoint-initdb.d/dump.sql
     environment:
       MARIADB_ROOT_PASSWORD: ${EVENT_DATABASE_PASS}
 
@@ -70,6 +95,8 @@ services:
     container_name: read_db
     image: mongo
     restart: always
+    volumes: 
+      - ./configs/read_db/init_read_db.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${READ_DATABASE_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${READ_DATABASE_PASS}
@@ -85,7 +112,8 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${READ_DATABASE_USER}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${READ_DATABASE_PASS}
-      ME_CONFIG_MONGODB_URL: mongodb://${READ_DATABASE_USER}:${READ_DATABASE_PASS}@read_db:${READ_DATABASE_PORT}/
+      # ME_CONFIG_MONGODB_URL: mongodb://${READ_DATABASE_USER}:${READ_DATABASE_PASS}@read_db:${READ_DATABASE_PORT}/
+      ME_CONFIG_MONGODB_URL: ${READ_DATABASE_URI}
 
   debezium_server:
     container_name: debezium_server

@@ -2,7 +2,7 @@ FROM golang:1.18-bullseye AS builder
 
 WORKDIR /go/src/github.com/cosmonaut-cat/boardgames_backend/
 
-COPY . .
+COPY ./ ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./event_handler github.com/cosmonaut-cat/boardgames_backend/cmd/event_handler
 
