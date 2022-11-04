@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package boardgames_backend.api;
+package boardgames_backend.api.event_handler;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
-import "api/query.proto";
+import "api/event_handler/query.proto";
 
 message Event {
     string event_id = 1;
@@ -16,15 +16,14 @@ message Event {
     google.protobuf.Any event_payload = 6;
 
     message AppendRequest {
-        string id = 1;
-        repeated Event events = 2;
+        Event event = 1;
     }
 
     message ScanRequest {
         string id = 1;
-        boardgames_backend.api.QueryOperator operator = 2;
-        boardgames_backend.api.QueryParam start = 3;
-        boardgames_backend.api.QueryParam end = 4;
+        boardgames_backend.api.event_handler.QueryOperator operator = 2;
+        boardgames_backend.api.event_handler.QueryParam start = 3;
+        boardgames_backend.api.event_handler.QueryParam end = 4;
     }
 
     message LatestRequest {

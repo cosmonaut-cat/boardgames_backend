@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             (unknown)
-// source: api/event.proto
+// source: api/event_handler/event.proto
 
-package api
+package event_handler
 
 import (
 	context "context"
@@ -38,7 +38,7 @@ func NewEventServicesClient(cc grpc.ClientConnInterface) EventServicesClient {
 
 func (c *eventServicesClient) Append(ctx context.Context, in *Event_AppendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/boardgames_backend.api.EventServices/Append", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/boardgames_backend.api.event_handler.EventServices/Append", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *eventServicesClient) Append(ctx context.Context, in *Event_AppendReques
 }
 
 func (c *eventServicesClient) Scan(ctx context.Context, in *Event_ScanRequest, opts ...grpc.CallOption) (EventServices_ScanClient, error) {
-	stream, err := c.cc.NewStream(ctx, &EventServices_ServiceDesc.Streams[0], "/boardgames_backend.api.EventServices/Scan", opts...)
+	stream, err := c.cc.NewStream(ctx, &EventServices_ServiceDesc.Streams[0], "/boardgames_backend.api.event_handler.EventServices/Scan", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (x *eventServicesScanClient) Recv() (*Event, error) {
 
 func (c *eventServicesClient) Latest(ctx context.Context, in *Event_LatestRequest, opts ...grpc.CallOption) (*Event, error) {
 	out := new(Event)
-	err := c.cc.Invoke(ctx, "/boardgames_backend.api.EventServices/Latest", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/boardgames_backend.api.event_handler.EventServices/Latest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func _EventServices_Append_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/boardgames_backend.api.EventServices/Append",
+		FullMethod: "/boardgames_backend.api.event_handler.EventServices/Append",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServicesServer).Append(ctx, req.(*Event_AppendRequest))
@@ -171,7 +171,7 @@ func _EventServices_Latest_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/boardgames_backend.api.EventServices/Latest",
+		FullMethod: "/boardgames_backend.api.event_handler.EventServices/Latest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServicesServer).Latest(ctx, req.(*Event_LatestRequest))
@@ -183,7 +183,7 @@ func _EventServices_Latest_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EventServices_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "boardgames_backend.api.EventServices",
+	ServiceName: "boardgames_backend.api.event_handler.EventServices",
 	HandlerType: (*EventServicesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -202,5 +202,5 @@ var EventServices_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "api/event.proto",
+	Metadata: "api/event_handler/event.proto",
 }

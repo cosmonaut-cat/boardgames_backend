@@ -1,6 +1,6 @@
 package app
 
-import command "github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/app/command/event"
+import command "github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/app/command/event"
 
 type Application struct {
 	Commands Commands

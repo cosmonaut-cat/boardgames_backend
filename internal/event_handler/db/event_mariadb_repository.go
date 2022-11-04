@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	eventTypes "github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/domain/event"
-	"github.com/cosmonaut-cat/boardgames_backend/pkg/api"
+	eventTypes "github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/domain/event"
+	"github.com/cosmonaut-cat/boardgames_backend/pkg/api/event_handler"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -38,30 +38,33 @@ func NewMariaDBEventRepository(db *sqlx.DB) *MariaDBEventRepository {
 	return &MariaDBEventRepository{db: db}
 }
 
-func (m MariaDBEventRepository) AppendEvents(ctx context.Context, eventId string, events []*api.Event) error {
-	if len(events) == 0 {
-		return errors.New(fmt.Sprintf("without items to append"))
+func (m MariaDBEventRepository) AppendEvent(ctx context.Context, event *event_handler.Event) error {
+	events := []*event_handler.Event{
+		event,
 	}
 
-	eventCurrentVer := events[0].EventVersion
-	storedEventLatestVer, err := m.getEventLatestVersion(ctx, eventId)
+	if event == nil {
+		return errors.New(fmt.Sprintf("without item to append"))
+	}
+
+	eventCurrentVer := event.EventVersion
+	storedEventLatestVer, err := m.getEventLatestVersion(ctx, event.EventId)
 
 	if err != nil {
 		return err
 	}
 
 	if storedEventLatestVer == 0 {
-		lastEvent := events[len(events)-1]
-		events = append([]*api.Event{
+		events = append([]*event_handler.Event{
 			{
-				EventId:        eventId,
+				EventId:        event.EventId,
 				EventType:      string(eventTypes.LatestVersion),
-				EventEntity:    lastEvent.EventEntity,
-				EventVersion:   lastEvent.EventVersion,
-				EventTimestamp: lastEvent.EventTimestamp,
-				EventPayload:   lastEvent.EventPayload,
+				EventEntity:    event.EventEntity,
+				EventVersion:   event.EventVersion,
+				EventTimestamp: event.EventTimestamp,
+				EventPayload:   event.EventPayload,
 			},
-		}, events...)
+		}, event)
 	}
 
 	if eventCurrentVer != storedEventLatestVer+1 {
@@ -78,7 +81,7 @@ func (m MariaDBEventRepository) AppendEvents(ctx context.Context, eventId string
 		err = m.finishTransaction(err, tx)
 	}()
 
-	err = m.appendEvents(tx, eventId, storedEventLatestVer, events)
+	err = m.appendEvents(tx, event.EventId, storedEventLatestVer, events)
 
 	if err != nil {
 		return err
@@ -87,7 +90,7 @@ func (m MariaDBEventRepository) AppendEvents(ctx context.Context, eventId string
 	return nil
 }
 
-func (m MariaDBEventRepository) appendEvents(tx *sqlx.Tx, eventId string, eventLatestVersion int64, events []*api.Event) error {
+func (m MariaDBEventRepository) appendEvents(tx *sqlx.Tx, eventId string, eventLatestVersion int64, events []*event_handler.Event) error {
 	newEvents := []mariadbEvent{}
 
 	for _, event := range events {
@@ -125,7 +128,7 @@ func (m MariaDBEventRepository) appendEvents(tx *sqlx.Tx, eventId string, eventL
 	return nil
 }
 
-func (m MariaDBEventRepository) Latest(ctx context.Context, eventId string) (*api.Event, error) {
+func (m MariaDBEventRepository) Latest(ctx context.Context, eventId string) (*event_handler.Event, error) {
 	event := &mariadbEvent{}
 
 	err := m.db.Get(event, "SELECT * FROM events WHERE event_id=? AND event_version=?", eventId, eventTypes.LatestVersion)
@@ -140,7 +143,7 @@ func (m MariaDBEventRepository) Latest(ctx context.Context, eventId string) (*ap
 		return nil, errors.New(fmt.Sprintf("Failed to parse event timestamp because %s\n", err))
 	}
 
-	return &api.Event{
+	return &event_handler.Event{
 		EventId:        event.ID,
 		EventType:      event.Type,
 		EventEntity:    event.Type,
@@ -187,7 +190,7 @@ func (m MariaDBEventRepository) finishTransaction(err error, tx *sqlx.Tx) error 
 }
 
 func NewMariaDBConnection() (*sqlx.DB, error) {
-	db, err := sqlx.Open("mysql", "root:123root@tcp(db)/event_store")
+	db, err := sqlx.Open("mysql", "root:123root@tcp(event_db)/event_store")
 
 	if err != nil {
 		return nil, err

@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/domain/event"
-	"github.com/cosmonaut-cat/boardgames_backend/pkg/api"
+	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/domain/event"
+	"github.com/cosmonaut-cat/boardgames_backend/pkg/api/event_handler"
 )
 
 type AppendEventHandler struct {
@@ -20,8 +20,8 @@ func NewAppendEventHandler(eventRepository event.Repository) AppendEventHandler 
 	return AppendEventHandler{eventRepository: eventRepository}
 }
 
-func (a AppendEventHandler) Handle(ctx context.Context, id string, events []*api.Event) error {
-	err := a.eventRepository.AppendEvents(ctx, id, events)
+func (a AppendEventHandler) Handle(ctx context.Context, event *event_handler.Event) error {
+	err := a.eventRepository.AppendEvent(ctx, event)
 
 	if err != nil {
 		return err

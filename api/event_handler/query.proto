@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package boardgames_backend.api;
+package boardgames_backend.api.event_handler;
 
 import "google/protobuf/timestamp.proto";
 

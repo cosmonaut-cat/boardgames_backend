@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 
-	"github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/app"
-	command "github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/app/command/event"
-	"github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/db"
-	"github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/services"
-	"github.com/cosmonaut-cat/boardgames_backend/pkg/api"
+	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/app"
+	command "github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/app/command/event"
+	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/db"
+	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/services"
+	"github.com/cosmonaut-cat/boardgames_backend/pkg/api/event_handler"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -25,7 +25,7 @@ func main() {
 
 	eventService := services.NewEventServiceServer(application)
 
-	api.RegisterEventServicesServer(grpcServer, eventService)
+	event_handler.RegisterEventServicesServer(grpcServer, eventService)
 
 	serveGrpcServer()
 

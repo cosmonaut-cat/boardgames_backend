@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 
-	"github.com/cosmonaut-cat/boardgames_backend/pkg/api"
+	"github.com/cosmonaut-cat/boardgames_backend/pkg/api/event_handler"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 )
 
 type Repository interface {
-	AppendEvents(ctx context.Context, eventId string, events []*api.Event) error
+	AppendEvent(ctx context.Context, event *event_handler.Event) error
 	// Scan(ctx context.Context, eventId string) error
-	Latest(ctx context.Context, eventId string) (*api.Event, error)
+	Latest(ctx context.Context, eventId string) (*event_handler.Event, error)
 }

@@ -3,13 +3,13 @@ package services
 import (
 	"context"
 
-	"github.com/cosmonaut-cat/boardgames_backend/internal/backend_api/app"
-	"github.com/cosmonaut-cat/boardgames_backend/pkg/api"
+	"github.com/cosmonaut-cat/boardgames_backend/internal/event_handler/app"
+	"github.com/cosmonaut-cat/boardgames_backend/pkg/api/event_handler"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type EventServiceServer struct {
-	api.UnimplementedEventServicesServer
+	event_handler.UnimplementedEventServicesServer
 
 	app app.Application
 }
@@ -18,8 +18,8 @@ func NewEventServiceServer(application *app.Application) *EventServiceServer {
 	return &EventServiceServer{app: *application}
 }
 
-func (e *EventServiceServer) Append(ctx context.Context, req *api.Event_AppendRequest) (*emptypb.Empty, error) {
-	err := e.app.Commands.AppendEvent.Handle(ctx, req.Id, req.Events)
+func (e *EventServiceServer) Append(ctx context.Context, req *event_handler.Event_AppendRequest) (*emptypb.Empty, error) {
+	err := e.app.Commands.AppendEvent.Handle(ctx, req.Event)
 
 	if err != nil {
 		return nil, err

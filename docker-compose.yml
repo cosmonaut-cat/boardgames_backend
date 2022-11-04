@@ -4,46 +4,46 @@ services:
 
   redis:
     image: redis:7-bullseye
-    container_name: redis_streams
+    container_name: redis
     depends_on:
-      - db
+      - event_db
 
-  redis-commander:
+  redis_commander:
     container_name: redis_commander
     image: ghcr.io/joeferner/redis-commander:latest
     restart: always
     environment:
-    - REDIS_HOSTS=local:redis:6379
+    - REDIS_HOSTS=local:redis:${REDIS_PORT}
     ports:
     - "8082:8081"
     depends_on:
       - redis
 
-  backend_api:
-    image: cosmonaut-cat/backend:latest
-    container_name: backend_api
+  backend_event_handler:
+    image: cosmonaut-cat/backend_event_handler:latest
+    container_name: backend_event_handler
     depends_on:
-      - db
-      - mongo
+      - event_db
+      - read_db
       - redis
 
     command: 
-    - boardgames_api
+    - event_handler
   
-  grpcui:
+  grpc_ui:
     container_name: grpc_ui
     image: fullstorydev/grpcui
     depends_on:
-      - backend_api
+      - backend_event_handler
     ports:
       - 13030:8080
     command: 
       - -plaintext
       - -use-reflection
-      - backend_api:3030
+      - backend_event_handler:3030
 
-  db:
-    container_name: maria_db
+  event_db:
+    container_name: event_db
     image: mariadb
     command: 
      --binlog_format=row
@@ -55,39 +55,39 @@ services:
     volumes:
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/dump.sql
     environment:
-      MARIADB_ROOT_PASSWORD: 123root
+      MARIADB_ROOT_PASSWORD: ${EVENT_DATABASE_PASS}
 
   adminer:
     container_name: adminer
     image: adminer
     depends_on:
-      - db
+      - event_db
     restart: always
     ports:
       - 8080:8080
 
-  mongo:
-    container_name: mongo
+  read_db:
+    container_name: read_db
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 123root
+      MONGO_INITDB_ROOT_USERNAME: ${READ_DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${READ_DATABASE_PASS}
 
-  mongo-express:
+  mongo_express:
     container_name: mongo_express
     image: mongo-express
     depends_on:
-      - mongo
+      - read_db
     restart: always
     ports:
       - 8081:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: 123root
-      ME_CONFIG_MONGODB_URL: mongodb://root:123root@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${READ_DATABASE_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${READ_DATABASE_PASS}
+      ME_CONFIG_MONGODB_URL: mongodb://${READ_DATABASE_USER}:${READ_DATABASE_PASS}@read_db:${READ_DATABASE_PORT}/
 
-  debezium-server:
+  debezium_server:
     container_name: debezium_server
     image: debezium/server
     volumes:
@@ -95,6 +95,6 @@ services:
     ports:
       - 8083:8083
     depends_on:
-      - mongo
+      - read_db
       - redis
-      - db
+      - event_db
